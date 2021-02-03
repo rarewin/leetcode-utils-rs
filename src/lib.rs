@@ -41,10 +41,10 @@ impl<T: Copy + std::fmt::Debug + FromStr> TreeNode<T> {
         for i in 0..(tree.len() / 2) {
             if let Some(Some(p)) = nodes.get(i) {
                 if let Some(Some(n)) = nodes.get(2 * (i + 1) - 1) {
-                    p.clone().borrow_mut().left = Some(n.clone());
+                    p.as_ref().borrow_mut().left = Some(n.clone());
                 }
                 if let Some(Some(n)) = nodes.get(2 * (i + 1)) {
-                    p.clone().borrow_mut().right = Some(n.clone());
+                    p.as_ref().borrow_mut().right = Some(n.clone());
                 }
             }
         }
