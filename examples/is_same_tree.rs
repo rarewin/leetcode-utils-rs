@@ -1,4 +1,4 @@
-use leetcode_utils_rs::TreeNodeI32 as TreeNode;
+use leetcode_utils_rs::treenode::TreeNodeI32 as TreeNode;
 use std::cell::RefCell;
 use std::rc::Rc;
 
