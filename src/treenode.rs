@@ -38,18 +38,36 @@ impl<T: Copy + std::fmt::Debug + FromStr> TreeNode<T> {
             });
         }
 
-        for i in 0..(tree.len() / 2) {
-            if let Some(Some(p)) = nodes.get(i) {
-                if let Some(Some(n)) = nodes.get(2 * (i + 1) - 1) {
-                    p.as_ref().borrow_mut().left = Some(n.clone());
-                }
-                if let Some(Some(n)) = nodes.get(2 * (i + 1)) {
-                    p.as_ref().borrow_mut().right = Some(n.clone());
+        // save root node
+        let root = nodes[0].clone();
+
+        nodes.reverse();
+
+        let mut previous_level = Vec::new();
+        let mut next_level = Vec::new();
+
+        previous_level.push(nodes.pop().unwrap_or(None));
+
+        while !&nodes.is_empty() {
+            for n in &previous_level {
+                if let Some(nn) = n {
+                    if let Some(left) = nodes.pop() {
+                        nn.as_ref().borrow_mut().left = left;
+                        next_level.push(nn.as_ref().borrow().left.clone());
+                    }
+
+                    if let Some(right) = nodes.pop() {
+                        nn.as_ref().borrow_mut().right = right;
+                        next_level.push(nn.as_ref().borrow().right.clone());
+                    }
                 }
             }
+
+            std::mem::swap(&mut previous_level, &mut next_level);
+            next_level.clear();
         }
 
-        nodes[0].clone()
+        root
     }
 
     pub fn from_vec_str(tree_str: &str) -> Option<Rc<RefCell<Self>>> {
@@ -169,6 +187,26 @@ mod tests_treenode {
                 val: 1,
                 left: Some(Rc::new(RefCell::new(TreeNode::new(3)))),
                 right: None,
+            })))
+        );
+    }
+
+    #[test]
+    fn integer_tree_without_leftmost_node() {
+        assert_eq!(
+            TreeNode::from_vec_str("[3,0,4,null,2,null,null,1]"),
+            Some(Rc::new(RefCell::new(TreeNode {
+                val: 3,
+                left: Some(Rc::new(RefCell::new(TreeNode {
+                    val: 0,
+                    left: None,
+                    right: Some(Rc::new(RefCell::new(TreeNode {
+                        val: 2,
+                        left: Some(Rc::new(RefCell::new(TreeNode::new(1)))),
+                        right: None,
+                    })))
+                }))),
+                right: Some(Rc::new(RefCell::new(TreeNode::new(4)))),
             })))
         );
     }
