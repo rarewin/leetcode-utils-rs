@@ -92,6 +92,45 @@ impl<T: Copy + std::fmt::Debug + FromStr> TreeNode<T> {
     }
 }
 
+impl<T: Copy + std::fmt::Display> std::fmt::Display for TreeNode<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        let root = Rc::new(RefCell::new(Self {
+            val: self.val,
+            left: self.left.clone(),
+            right: self.right.clone(),
+        }));
+
+        let mut previous_level = Vec::<Option<Rc<RefCell<Self>>>>::new();
+        let mut next_level = Vec::<Option<Rc<RefCell<Self>>>>::new();
+
+        let mut elements = Vec::<String>::new();
+
+        previous_level.push(Some(root));
+
+        while !&previous_level.is_empty() {
+            for n in &previous_level {
+                if let Some(nn) = n {
+                    elements.push(format!("{}", nn.as_ref().borrow().val));
+                    next_level.push(nn.as_ref().borrow().left.clone());
+                    next_level.push(nn.as_ref().borrow().right.clone());
+                } else {
+                    elements.push("null".into());
+                }
+            }
+
+            std::mem::swap(&mut previous_level, &mut next_level);
+            next_level.clear();
+        }
+
+        // remove terminal 'null' pairs
+        while elements.ends_with(&["null".into()]) {
+            elements.pop();
+        }
+
+        write!(f, "[{}]", elements.join(", "))
+    }
+}
+
 #[cfg(test)]
 mod tests_treenode {
     use crate::treenode::TreeNode;
@@ -208,6 +247,32 @@ mod tests_treenode {
                 }))),
                 right: Some(Rc::new(RefCell::new(TreeNode::new(4)))),
             })))
+        );
+    }
+
+    #[test]
+    fn display_one_node() {
+        let tree = TreeNode::<i32>::from_vec_str("[1]");
+
+        assert_eq!(format!("{}", tree.unwrap().clone().borrow()), "[1]");
+    }
+
+    #[test]
+    fn display_integer_three_nodes_with_none_from_vec_str() {
+        let tree = TreeNode::<i32>::from_vec_str("[1, null, 3]");
+
+        assert_eq!(
+            format!("{}", tree.unwrap().clone().borrow()),
+            "[1, null, 3]"
+        );
+    }
+
+    #[test]
+    fn display_integer_tree_without_leftmost_node() {
+        let tree = TreeNode::<i32>::from_vec_str("[3,0,4,null,2,null,null,1]");
+        assert_eq!(
+            format!("{}", tree.unwrap().clone().borrow()),
+            "[3, 0, 4, null, 2, null, null, 1]"
         );
     }
 }
