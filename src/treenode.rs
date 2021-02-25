@@ -5,7 +5,7 @@ use std::str::FromStr;
 pub type TreeNodeI32 = crate::treenode::TreeNode<i32>;
 
 // Definition for a binary tree node.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 pub struct TreeNode<T: Copy> {
     pub val: T,
     pub left: Option<Rc<RefCell<TreeNode<T>>>>,
@@ -128,6 +128,12 @@ impl<T: Copy + std::fmt::Display> std::fmt::Display for TreeNode<T> {
         }
 
         write!(f, "[{}]", elements.join(", "))
+    }
+}
+
+impl<T: Copy + std::fmt::Display> std::fmt::Debug for TreeNode<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", self)
     }
 }
 
@@ -274,5 +280,13 @@ mod tests_treenode {
             format!("{}", tree.unwrap().clone().borrow()),
             "[3, 0, 4, null, 2, null, null, 1]"
         );
+    }
+
+    // #[test]
+    #[allow(dead_code)]
+    fn debug_one_node() {
+        let tree = TreeNode::<i32>::from_vec_str("[1]");
+
+        assert_eq!(format!("{:?}", tree.unwrap().clone().borrow()), "1");
     }
 }
